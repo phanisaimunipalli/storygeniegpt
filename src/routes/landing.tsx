@@ -44,8 +44,21 @@ const Landing: React.FunctionComponent = () => {
           <img src={logoImage} width={424} height={424} alt="logo" />
         </Box>
         <Box m={2}>
-          <Button onClick={signIn} variant="contained" color="primary">
-            SIGN IN
+          <Button
+            onClick={signIn}
+            variant="contained"
+            color="primary"
+            style={{
+              width: "250px",
+              height: "50px",
+              fontSize: "16px",
+              backgroundColor: "#009AEE",
+              color: "white",
+              fontWeight: "bold",
+              textTransform: "none",
+            }}
+          >
+            Experience the Magic!
           </Button>
         </Box>
       </Grid>

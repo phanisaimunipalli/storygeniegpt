@@ -24,6 +24,14 @@ import { AuthContext } from "../contexts/authContext";
 
 const useStyles = makeStyles((theme) => ({
   root: {},
+  "@global": {
+    "@font-face": {
+      fontFamily: "Open Sans",
+      fontStyle: "normal",
+      fontWeight: 400,
+      src: "url(https://fonts.googleapis.com/css?family=Open+Sans:400&display=swap)",
+    },
+  },
   palette: {
     primary: {
       main: "#E33E7F",
@@ -134,7 +142,9 @@ export default function Home() {
     <Grid container>
       <Grid container direction="row" justifyContent="flex-end">
         <Box m={1}>
-          <pre>Welcome {JSON.stringify(auth.attrInfo[3].Value, null, 2)}</pre>
+          {auth.attrInfo[3] && (
+            <pre>Welcome {JSON.stringify(auth.attrInfo[3].Value, null, 2)}</pre>
+          )}
         </Box>
 
         <Box m={1}>
