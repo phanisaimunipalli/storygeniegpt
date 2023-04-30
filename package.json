@@ -48,7 +48,7 @@
   },
   "scripts": {
     "start": "node node_modules/react-scripts/scripts/start.js",
-    "build": "node node_modules/react-scripts/scripts/build.js",
+    "build": "tsc",
     "test": "echo 'test completed'",
     "eject": "node node_modules/react-scripts/scripts/eject.js"
   },
