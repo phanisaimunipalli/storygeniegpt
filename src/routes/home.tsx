@@ -17,7 +17,7 @@ import CardContent from "@material-ui/core/CardContent";
 import CardActions from "@material-ui/core/CardActions";
 import TextField from "@material-ui/core/TextField";
 import CircularProgress from "@material-ui/core/CircularProgress";
-
+import VideoPlayer from "./VideoPlayer";
 import logoImage from "./storygeniee.gif";
 
 import { AuthContext } from "../contexts/authContext";
@@ -42,23 +42,41 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    margin: "auto",
+    marginTop: "70px",
     maxWidth: 500,
     padding: theme.spacing(4),
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    boxShadow: "0 0 30px 10px rgba(255, 255, 255, 0.3)",
   },
   input: {
     marginBottom: theme.spacing(2),
+    borderColor: "white",
+    border: "1px solid red",
     width: "400px",
+    color: "white",
+    "&::placeholder": {
+      color: "gray",
+    },
+  },
+
+  label: {
+    marginBottom: theme.spacing(2),
+    width: "400px",
+    color: "black",
+    border: "1px solid white",
+    padding: "10px",
   },
   submitButton: {
     fontSize: "15px",
     width: "150px",
     height: "45px",
     marginTop: theme.spacing(2),
+    alignSelf: "center",
   },
   title: {
     textAlign: "center",
     marginBottom: theme.spacing(2),
+    color: "white",
   },
   session: {
     width: "80vw",
@@ -70,6 +88,9 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     background: "rgb(220,220,220)",
     height: "10px",
+  },
+  preStyle: {
+    color: "white",
   },
 }));
 
@@ -143,7 +164,9 @@ export default function Home() {
       <Grid container direction="row" justifyContent="flex-end">
         <Box m={1}>
           {auth.attrInfo[3] && (
-            <pre>Welcome {JSON.stringify(auth.attrInfo[3].Value, null, 2)}</pre>
+            <pre className={classes.preStyle}>
+              Welcome {JSON.stringify(auth.attrInfo[3].Value, null, 2)}
+            </pre>
           )}
         </Box>
 
@@ -208,22 +231,15 @@ export default function Home() {
           </Button>
         </Box>
       </Grid>
+      {/* <Box m={1}>
+        <img src={logoImage} width={334} height={334} alt="logo" />
+      </Box> */}
       <Grid
         className={classes.root}
         container
-        direction="row"
+        direction="column"
         alignItems="center"
       >
-        {/* <Box className={classes.hero} p={1}> */}
-        {/* <Grid className={classes.root} container direction="row" alignItems="center" justifyContent="flex-end"> */}
-        {/* <pre className={classes.session}>Welcome {JSON.stringify(auth.attrInfo[3].Value, null, 2)}</pre> */}
-
-        {/* </Grid> */}
-        {/* </Box> */}
-        <Box m={20}>
-          <img src={logoImage} width={334} height={334} alt="logo" />
-        </Box>
-
         {isLoading ? (
           <Box m={2}>
             <CircularProgress />
@@ -234,9 +250,16 @@ export default function Home() {
               <Typography className={classes.title} variant="h5" component="h2">
                 Generate Story
               </Typography>
-              <form className={classes.form} onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit}>
                 <TextField
+                  InputLabelProps={{
+                    style: { color: "white", borderBlockColor: "white" },
+                  }}
+                  InputProps={{
+                    style: { color: "white", borderBlockColor: "white" },
+                  }}
                   className={classes.input}
+                  placeholder="Write your theme"
                   variant="outlined"
                   label="Theme"
                   name="theme"
@@ -245,6 +268,12 @@ export default function Home() {
                   onChange={(event) => setTheme(event.target.value)}
                 />
                 <TextField
+                  InputLabelProps={{
+                    style: { color: "white", borderBlockColor: "white" },
+                  }}
+                  InputProps={{
+                    style: { color: "white", borderBlockColor: "white" },
+                  }}
                   className={classes.input}
                   variant="outlined"
                   label="Characters"
@@ -254,6 +283,12 @@ export default function Home() {
                   onChange={(event) => setCharacters(event.target.value)}
                 />
                 <TextField
+                  InputLabelProps={{
+                    style: { color: "white", borderBlockColor: "white" },
+                  }}
+                  InputProps={{
+                    style: { color: "white", borderBlockColor: "white" },
+                  }}
                   className={classes.input}
                   variant="outlined"
                   name="tone"
