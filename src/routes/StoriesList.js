@@ -129,7 +129,7 @@ export default function StoriesList() {
     const config = {
       method: "post",
       maxBodyLength: Infinity,
-      url: "/apis/add-task",
+      url: "https://api.monsterapi.ai/apis/add-task",
       headers: {
         "x-api-key": process.env.REACT_APP_MONSTER_API_KEY,
         Authorization: process.env.REACT_APP_MONSTER_AUTH_TOKEN,
@@ -153,7 +153,7 @@ export default function StoriesList() {
             const sconfig = {
               method: "post",
               maxBodyLength: Infinity,
-              url: "/apis/task-status",
+              url: "https://api.monsterapi.ai/apis/task-status",
               headers: {
                 "x-api-key": process.env.REACT_APP_MONSTER_API_KEY,
                 Authorization: process.env.REACT_APP_MONSTER_AUTH_TOKEN,
