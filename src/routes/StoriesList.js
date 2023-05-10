@@ -63,6 +63,8 @@ export default function StoriesList() {
   const classes = useStyles();
   const [stories, setStories] = useState([]);
   const [polly, setPolly] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   const API_URL = process.env.REACT_APP_API_URL;
   useEffect(() => {
     axios
@@ -110,12 +112,13 @@ export default function StoriesList() {
   };
 
   const handleCreateImageClicked = (storyText) => {
+    setIsLoading(true);
     const data = JSON.stringify({
       model: "txt2img",
       data: {
         prompt: storyText,
         negprompt: "ugly, disfigured, inhuman",
-        samples: 1,
+        samples: 2,
         steps: 50,
         aspect_ratio: "square",
         guidance_scale: 12.5,
@@ -126,7 +129,7 @@ export default function StoriesList() {
     const config = {
       method: "post",
       maxBodyLength: Infinity,
-      url: "https://api.monsterapi.ai/apis/add-task",
+      url: "/apis/add-task",
       headers: {
         "x-api-key": process.env.REACT_APP_MONSTER_API_KEY,
         Authorization: process.env.REACT_APP_MONSTER_AUTH_TOKEN,
@@ -144,31 +147,48 @@ export default function StoriesList() {
           process_id: processId,
         });
 
-        const sconfig = {
-          method: "post",
-          maxBodyLength: Infinity,
-          url: "https://api.monsterapi.ai/apis/task-status",
-          headers: {
-            "x-api-key": process.env.REACT_APP_MONSTER_API_KEY,
-            Authorization: process.env.REACT_APP_MONSTER_AUTH_TOKEN,
-            "Content-Type": "application/json",
-          },
-          data: sdata,
-        };
+        const checkStatus = () => {
+          //set timeout for second api call
+          setTimeout(() => {
+            const sconfig = {
+              method: "post",
+              maxBodyLength: Infinity,
+              url: "/apis/task-status",
+              headers: {
+                "x-api-key": process.env.REACT_APP_MONSTER_API_KEY,
+                Authorization: process.env.REACT_APP_MONSTER_AUTH_TOKEN,
+                "Content-Type": "application/json",
+              },
+              data: sdata,
+            };
 
-        axios(sconfig)
-          .then(function (response) {
-            console.log("response from second api 2: ", response);
-            const status = response.data.response_data.status;
-            if (status === "COMPLETED") {
-              const imageUrl = response.data.response_data.result.output[0];
-              // Open the image in a new window
-              window.open(imageUrl);
-            }
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+            axios(sconfig)
+              .then(function (response) {
+                console.log("response from second api 2: ", response);
+                const status = response.data.response_data.status;
+                if (status === "COMPLETED") {
+                  const imageUrl1 =
+                    response.data.response_data.result.output[0];
+                  const imageUrl2 =
+                    response.data.response_data.result.output[1];
+                  // Open the image in a new window
+                  window.open(imageUrl1);
+                  window.open(imageUrl2);
+
+                  // enable the button to indicate that the request is complete
+                  setIsLoading(false);
+                } else {
+                  // call the function again to check the status after 5 seconds
+                  checkStatus();
+                }
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+          }, 4000);
+        };
+        //check on loop until the status is COMPLETED
+        checkStatus();
       })
       .catch(function (error) {
         console.log(error);
@@ -207,8 +227,9 @@ export default function StoriesList() {
                 className={classes.submitButton}
                 size="small"
                 onClick={() => handleCreateImageClicked(story.text)}
+                disabled={isLoading} // disable the button while the image is being generated
               >
-                Create Art
+                {isLoading ? "Creating Art..." : "Create Art"}
               </Button>
             </CardActions>
           </Card>

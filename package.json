@@ -1,6 +1,7 @@
 {
   "name": "storygenie",
   "version": "2.0.1",
+  "proxy": "https://api.monsterapi.ai",
   "description": "StoryGenie is a Story generator Platform for children bedtime stories using OpenAI's GPT-4 Model.",
   "repository": {
     "type": "git",
