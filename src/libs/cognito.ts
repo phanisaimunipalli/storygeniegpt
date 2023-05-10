@@ -1,5 +1,5 @@
-import { AuthenticationDetails, CognitoUser, CognitoUserAttribute, CognitoUserPool } from 'amazon-cognito-identity-js'
-
+import { AuthenticationDetails, CognitoUser, CognitoUserAttribute, CognitoUserPool, CognitoUserSession } from 'amazon-cognito-identity-js'
+import { Auth } from 'aws-amplify';
 const userPoolId = process.env.REACT_APP_USERPOOL_ID
 const clientId = process.env.REACT_APP_CLIENT_ID
 
@@ -198,3 +198,9 @@ export async function changePassword(oldPassword: string, newPassword: string) {
     })
   })
 }
+
+// export const signInWithGoogle = async (tokenId: string): Promise<CognitoUserSession> => {
+//   await Auth.federatedSignIn({ provider: 'Google', token: tokenId });
+//   const session = await Auth.currentSession();
+//   return session as CognitoUserSession;
+// };

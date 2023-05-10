@@ -11,7 +11,11 @@ import Paper from "@material-ui/core/Paper";
 
 import { useValidPassword, useValidUsername } from "../../hooks/useAuthHooks";
 import { Password, Username } from "../../components/authComponents";
-
+import {
+  GoogleLogin,
+  useGoogleLogin,
+  GoogleOAuthProvider,
+} from "@react-oauth/google";
 import { AuthContext } from "../../contexts/authContext";
 
 const useStyles = makeStyles({
@@ -20,6 +24,25 @@ const useStyles = makeStyles({
   },
   hover: {
     "&:hover": { cursor: "pointer" },
+  },
+  newAccountButton: {
+    display: "block",
+    width: "100%",
+    padding: "10px",
+    backgroundColor: "green",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    fontSize: "15px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    "&hover": {
+      backgroundColor: "red",
+      background: "transparent",
+    },
+    centerButton: {
+      textAlign: "center",
+    },
   },
 });
 
@@ -57,6 +80,10 @@ const SignIn: React.FunctionComponent<{}> = () => {
     history.push("requestcode");
   };
 
+  // const handleGoogleLogin = useGoogleLogin({
+  //   onSuccess: (tokenResponse: any) => console.log(tokenResponse),
+  // });
+
   return (
     <Grid
       className={classes.root}
@@ -86,7 +113,6 @@ const SignIn: React.FunctionComponent<{}> = () => {
             <Box m={2}>
               <Typography variant="h3">Sign in</Typography>
             </Box>
-
             {/* Sign In Form */}
             <Box width="80%" m={1}>
               {/* <Email emailIsValid={emailIsValid} setEmail={setEmail} /> */}
@@ -114,21 +140,19 @@ const SignIn: React.FunctionComponent<{}> = () => {
                 </Box>
               </Grid>
             </Box>
-
             {/* Error */}
             <Box mt={2}>
               <Typography color="error" variant="body2">
                 {error}
               </Typography>
             </Box>
-
             {/* Buttons */}
             <Box mt={2}>
               <Grid container direction="row" justify="center">
                 <Box m={1}>
                   <Button
                     color="secondary"
-                    variant="contained"
+                    variant="outlined"
                     onClick={() => history.goBack()}
                   >
                     Cancel
@@ -146,13 +170,36 @@ const SignIn: React.FunctionComponent<{}> = () => {
                 </Box>
               </Grid>
             </Box>
-            <Box mt={2}>
-              <Box onClick={() => history.push("signup")}>
-                <Typography className={classes.hover} variant="body1">
-                  Register a new account
-                </Typography>
+
+            <Grid
+              container
+              direction="row"
+              justify="center"
+              alignItems="center"
+            >
+              <Box mt={2} mr={2}>
+                <Box onClick={() => history.push("signup")}>
+                  <Typography
+                    className={classes.newAccountButton}
+                    variant="body1"
+                  >
+                    Sign up with Cognito
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
+              <Box mt={2}>
+                <GoogleLogin
+                  auto_select
+                  onSuccess={(credentialResponse) => {
+                    console.log(credentialResponse);
+                    history.push("/");
+                  }}
+                  onError={() => {
+                    console.log("Login Failed");
+                  }}
+                />
+              </Box>
+            </Grid>
           </Grid>
         </Paper>
       </Grid>

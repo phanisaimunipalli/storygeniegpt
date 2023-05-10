@@ -47,6 +47,7 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(4),
     backgroundColor: "rgba(0, 0, 0, 0.3)",
     boxShadow: "0 0 30px 10px rgba(255, 255, 255, 0.3)",
+    textAlign: "center",
   },
   input: {
     marginBottom: theme.spacing(2),
@@ -72,6 +73,7 @@ const useStyles = makeStyles((theme) => ({
     height: "45px",
     marginTop: theme.spacing(2),
     alignSelf: "center",
+    textAlign: "center",
   },
   title: {
     textAlign: "center",
@@ -131,6 +133,7 @@ export default function Home() {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
+    const API_URL = process.env.REACT_APP_API_URL;
     const formData = new FormData(event.currentTarget);
     const requestData = {
       theme: formData.get("theme"),
@@ -138,7 +141,7 @@ export default function Home() {
       tone: formData.get("tone"),
     };
     // console.log('requestData: ', requestData)
-    fetch("https://ehtr2028d0.execute-api.us-east-1.amazonaws.com/stories", {
+    fetch(`${API_URL}`, {
       method: "POST",
       body: JSON.stringify(requestData),
       headers: {
@@ -321,7 +324,7 @@ export default function Home() {
           </Card>
         ) : (
           <Box m={2}>
-            <Typography variant="h5">Stories List</Typography>
+            <Typography variant="h5">Once upon a time...</Typography>
             <StoriesList />
           </Box>
         )}

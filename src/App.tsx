@@ -27,7 +27,7 @@ import VideoPlayer from "./routes/VideoPlayer";
 
 let lightTheme = createMuiTheme({
   palette: {
-    type: "light",
+    type: "dark",
   },
 });
 lightTheme = responsiveFontSizes(lightTheme);
@@ -39,6 +39,7 @@ const useStyles = makeStyles((theme) => ({
     left: 0,
     width: "100%",
     height: "100%",
+    minHeight: "100vh",
     zIndex: -1,
     overflow: "hidden",
     "& video": {

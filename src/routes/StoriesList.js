@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
   submitButton: {
     color: "white",
     fontSize: "15px",
-    width: "150px",
+    width: "120px",
     height: "45px",
     marginTop: theme.spacing(2),
     alignSelf: "center",
@@ -59,13 +59,14 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function StoriesList() {
+  const [image, setImage] = useState(null);
   const classes = useStyles();
   const [stories, setStories] = useState([]);
   const [polly, setPolly] = useState(null);
-
+  const API_URL = process.env.REACT_APP_API_URL;
   useEffect(() => {
     axios
-      .get("https://ehtr2028d0.execute-api.us-east-1.amazonaws.com/stories")
+      .get(`${API_URL}`)
       .then((response) => {
         // console.log('response.data: ', response.data)
         setStories(response.data);
@@ -108,6 +109,72 @@ export default function StoriesList() {
     );
   };
 
+  const handleCreateImageClicked = (storyText) => {
+    const data = JSON.stringify({
+      model: "txt2img",
+      data: {
+        prompt: storyText,
+        negprompt: "ugly, disfigured, inhuman",
+        samples: 1,
+        steps: 50,
+        aspect_ratio: "square",
+        guidance_scale: 12.5,
+        seed: 2321,
+      },
+    });
+
+    const config = {
+      method: "post",
+      maxBodyLength: Infinity,
+      url: "https://api.monsterapi.ai/apis/add-task",
+      headers: {
+        "x-api-key": process.env.REACT_APP_MONSTER_API_KEY,
+        Authorization: process.env.REACT_APP_MONSTER_AUTH_TOKEN,
+        "Content-Type": "application/json",
+      },
+      data: data,
+    };
+    console.log("config from api 1: ", config);
+    axios(config)
+      .then(function (response) {
+        console.log("response from TextToImage API 1: ", response);
+        const processId = response.data.process_id;
+        // Call the second API with the processId
+        const sdata = JSON.stringify({
+          process_id: processId,
+        });
+
+        const sconfig = {
+          method: "post",
+          maxBodyLength: Infinity,
+          url: "https://api.monsterapi.ai/apis/task-status",
+          headers: {
+            "x-api-key": process.env.REACT_APP_MONSTER_API_KEY,
+            Authorization: process.env.REACT_APP_MONSTER_AUTH_TOKEN,
+            "Content-Type": "application/json",
+          },
+          data: sdata,
+        };
+
+        axios(sconfig)
+          .then(function (response) {
+            console.log("response from second api 2: ", response);
+            const status = response.data.response_data.status;
+            if (status === "COMPLETED") {
+              const imageUrl = response.data.response_data.result.output[0];
+              // Open the image in a new window
+              window.open(imageUrl);
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
   return (
     <Grid container spacing={2}>
       {stories.map((story) => (
@@ -135,6 +202,13 @@ export default function StoriesList() {
                 onClick={() => handleReadMoreClicked(story.text)}
               >
                 Read for Me!
+              </Button>
+              <Button
+                className={classes.submitButton}
+                size="small"
+                onClick={() => handleCreateImageClicked(story.text)}
+              >
+                Create Art
               </Button>
             </CardActions>
           </Card>
