@@ -6,9 +6,18 @@ import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardActions from "@material-ui/core/CardActions";
 import Typography from "@material-ui/core/Typography";
-import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 import AWS from "aws-sdk";
+import jsPDF from "jspdf";
+
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@material-ui/core";
+import html2canvas from "html2canvas";
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -47,7 +56,6 @@ const useStyles = makeStyles((theme) => ({
     "&:hover": {
       backgroundColor: "white",
       color: "black",
-
       transform: "scale(1.1)",
     },
   },
@@ -56,16 +64,71 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
     color: "white",
   },
+  dialogContent: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    padding: theme.spacing(2),
+  },
+  dialog: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(2),
+    [theme.breakpoints.up("md")]: {
+      maxWidth: "md",
+    },
+  },
+  closeButton: {
+    position: "absolute",
+    bottom: theme.spacing(1),
+    right: theme.spacing(1),
+    textTransform: "none",
+    fontWeight: "bold",
+    border: "1px solid white",
+  },
+  printButton: {
+    position: "absolute",
+    bottom: theme.spacing(1),
+    left: theme.spacing(1),
+    textTransform: "none",
+    fontWeight: "bold",
+    border: "1px solid white",
+  },
+  shareButton: {
+    position: "absolute",
+    top: theme.spacing(1),
+    right: theme.spacing(1),
+    textTransform: "none",
+    fontWeight: "bold",
+    border: "1px solid white",
+  },
+  image: {
+    maxWidth: "30%",
+    height: "auto",
+    borderRadius: theme.spacing(1),
+    boxShadow: theme.shadows[2],
+    margin: theme.spacing(1),
+  },
 }));
 
 export default function StoriesList() {
-  const [image, setImage] = useState(null);
   const classes = useStyles();
   const [stories, setStories] = useState([]);
   const [polly, setPolly] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [imageUrls, setImageUrls] = useState([]);
   const API_URL = process.env.REACT_APP_API_URL;
+
+  const [shortLink, setShortLink] = useState("");
+
+  const handleClose = () => {
+    setOpen(false);
+    setShortLink("");
+  };
+
   useEffect(() => {
     axios
       .get(`${API_URL}`)
@@ -111,14 +174,57 @@ export default function StoriesList() {
     );
   };
 
+  const handlePrint = (storyText) => {
+    // Create a new instance of jsPDF
+    const doc = new jsPDF();
+
+    // Set the font size and type
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+
+    // Add the main heading
+    doc.setFontSize(16);
+    // doc.setFontStyle("bold");
+    doc.setFont("helvetica", "bold");
+    doc.text("AI Stories - StoryGenie", 10, 20);
+
+    // Add a new line
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("", 10, 30);
+
+    // Add the text from the current story card as a paragraph
+    const textLines = doc.splitTextToSize(storyText, 180);
+    doc.text(textLines, 10, 40);
+
+    // Add the images from the current story card
+    imageUrls.forEach((imageUrl, index) => {
+      const imgWidth = 55;
+      const imgHeight = 55;
+
+      doc.addImage(
+        imageUrl,
+        "JPEG",
+        10 + index * (imgWidth + 10),
+        120,
+        imgWidth,
+        imgHeight
+      );
+    });
+
+    // Save the PDF
+    doc.save("artwork.pdf");
+  };
+
   const handleCreateImageClicked = (storyText) => {
     setIsLoading(true);
     const data = JSON.stringify({
       model: "txt2img",
       data: {
         prompt: storyText,
-        negprompt: "ugly, disfigured, inhuman",
-        samples: 2,
+        negprompt:
+          "lowres, signs, memes, labels, text, food, text, error, mutant, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, made by children, caricature, ugly, boring, sketch, lacklustre, repetitive, cropped, (long neck), facebook, youtube, body horror, out of frame, mutilated, tiled, frame, border, porcelain skin, doll like, doll, bad quality, cartoon, lowres, meme, low quality, worst quality, ugly, disfigured, inhuman, adult",
+        samples: 3,
         steps: 50,
         aspect_ratio: "square",
         guidance_scale: 12.5,
@@ -129,7 +235,7 @@ export default function StoriesList() {
     const config = {
       method: "post",
       maxBodyLength: Infinity,
-      url: "https://api.monsterapi.ai/apis/add-task",
+      url: "/apis/add-task",
       headers: {
         "x-api-key": process.env.REACT_APP_MONSTER_API_KEY,
         Authorization: process.env.REACT_APP_MONSTER_AUTH_TOKEN,
@@ -153,7 +259,7 @@ export default function StoriesList() {
             const sconfig = {
               method: "post",
               maxBodyLength: Infinity,
-              url: "https://api.monsterapi.ai/apis/task-status",
+              url: "/apis/task-status",
               headers: {
                 "x-api-key": process.env.REACT_APP_MONSTER_API_KEY,
                 Authorization: process.env.REACT_APP_MONSTER_AUTH_TOKEN,
@@ -171,9 +277,17 @@ export default function StoriesList() {
                     response.data.response_data.result.output[0];
                   const imageUrl2 =
                     response.data.response_data.result.output[1];
+                  const imageUrl3 =
+                    response.data.response_data.result.output[2];
                   // Open the image in a new window
-                  window.open(imageUrl1);
-                  window.open(imageUrl2);
+                  // window.open(imageUrl1);
+                  // window.open(imageUrl2);
+
+                  // set the image URLs to state
+                  setImageUrls([imageUrl1, imageUrl2, imageUrl3]);
+                  console.log(imageUrls);
+                  // open the modal to display the images
+                  setOpen(true);
 
                   // enable the button to indicate that the request is complete
                   setIsLoading(false);
@@ -193,6 +307,37 @@ export default function StoriesList() {
       .catch(function (error) {
         console.log(error);
       });
+  };
+
+  const handleShare = async (storyText) => {
+    const canvas = await html2canvas(document.querySelector("#dialog"));
+    const image = canvas.toDataURL("image/png");
+
+    const apiKey = "YOUR_BITLY_API_KEY";
+    const url = "https://api-ssl.bitly.com/v4/shorten";
+    const headers = {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    };
+    const data = JSON.stringify({ long_url: window.location.href });
+
+    try {
+      const response = await axios.post(url, data, { headers });
+      const shortUrl = response.data.link;
+      setShortLink(shortUrl);
+    } catch (error) {
+      console.log(error);
+    }
+
+    if (navigator.share) {
+      navigator.share({
+        title: "StoryGenie",
+        text: `Check out this amazing artwork I created with StoryGenie! ${shortLink}`,
+        url: image,
+      });
+    } else {
+      alert(`Share this link to show your artwork to others: ${shortLink}`);
+    }
   };
 
   return (
@@ -233,6 +378,48 @@ export default function StoriesList() {
               </Button>
             </CardActions>
           </Card>
+          <Dialog
+            open={open}
+            onClose={() => setOpen(false)}
+            fullWidth
+            maxWidth="md"
+          >
+            <DialogContent
+              className={classes.dialogContent}
+              style={{ height: "500px" }}
+            >
+              {imageUrls.map((imageUrl, index) => (
+                <img
+                  key={index}
+                  src={imageUrl}
+                  alt={`Generated image ${index}`}
+                  className={classes.image}
+                />
+              ))}
+            </DialogContent>
+            <DialogActions
+              style={{ display: "flex", justifyContent: "space-between" }}
+            >
+              <Button
+                className={classes.printButton}
+                onClick={() => handlePrint(story.text)}
+              >
+                Print
+              </Button>
+              {/* <Button
+                onClick={() => handleShare(story.text)}
+                className={classes.shareButton}
+              >
+                Share
+              </Button> */}
+              <Button
+                className={classes.closeButton}
+                onClick={() => setOpen(false)}
+              >
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Grid>
       ))}
     </Grid>
